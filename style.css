@@ -1,0 +1,375 @@
+/* ==========================================================================
+   ESTILOS BASE & INTERFAZ PREMIUM AVANZADA - UNO MASTER
+   ========================================================================== */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+:root {
+    --cyan-glow: #00d2ff;
+    --blue-uno: #0066cc;
+    --gold-accent: #ffd700;
+    --panel-bg: rgba(10, 18, 28, 0.88);
+    --panel-border: rgba(255, 255, 255, 0.1);
+}
+
+body {
+    background-color: #060b11;
+    /* Efecto de mesa de casino oscura premium con iluminación radial */
+    background-image: radial-gradient(circle at center, rgba(16, 44, 30, 0.7) 0%, rgba(5, 8, 12, 0.99) 100%);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    color: #f3f4f6;
+}
+
+/* CONTENEDOR GENERAL DE LA MESA */
+.game-table {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 20px;
+    position: relative;
+}
+
+/* --- RENDERIZADO ESTILIZADO DE CARTAS --- */
+.card {
+    width: 120px;
+    height: 180px;
+    border-radius: 14px;
+    user-select: none;
+    object-fit: contain;
+    transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* HEADER Y MARCADOR CENTRAL DE ESTADO */
+.game-status-panel {
+    background: var(--panel-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--panel-border);
+    border-top: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 16px 40px;
+    width: fit-content;
+    min-width: 720px;
+    margin: 0 auto;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 10;
+}
+
+.status-header-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.status-row {
+    display: flex;
+    align-items: center;
+}
+
+.status-row .label {
+    color: #9ca3af;
+    font-weight: 700;
+    width: 140px;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 1.8px;
+}
+
+.status-row .value {
+    font-weight: 700;
+}
+
+.turn-active-glow {
+    color: var(--cyan-glow);
+    font-size: 1.25rem;
+    text-shadow: 0 0 15px rgba(0, 210, 255, 0.6);
+}
+
+.turn-inactive {
+    color: #6b7280;
+    font-size: 1.1rem;
+}
+
+.log-highlight {
+    color: #e5e7eb;
+    font-style: italic;
+    font-size: 0.95rem;
+}
+
+/* ESCENARIO DE JUEGO (ARENA CENTRAL) */
+.center-arena {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 120px;
+    flex-grow: 1;
+    position: relative;
+}
+
+.deck-wrapper, .discard-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.arena-label {
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 2.5px;
+    color: rgba(255, 255, 255, 0.5);
+    background: rgba(0,0,0,0.5);
+    padding: 5px 16px;
+    border-radius: 30px;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+/* MAZO TRIDIMENSIONAL PARA ROBO */
+.deck-3d-stack {
+    position: relative;
+    width: 120px;
+    height: 180px;
+    cursor: pointer;
+}
+
+.deck-layer {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 14px;
+    background: #0f1318;
+    border: 1px solid rgba(255,255,255,0.06);
+}
+.layer-2 { transform: translate(-4px, -4px); background: #151a22; }
+.layer-3 { transform: translate(-8px, -8px); background: #1c232e; }
+
+.card-back-uno {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: #1e2530;
+    border: 4px solid #ffffff;
+    border-radius: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transform: translate(-12px, -12px);
+    box-shadow: 8px 12px 25px rgba(0,0,0,0.7);
+    overflow: hidden;
+}
+
+.card-back-uno .inner-oval {
+    width: 88%;
+    height: 75%;
+    background: var(--blue-uno);
+    border-radius: 50%;
+    transform: rotate(-28deg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.uno-text-3d {
+    font-size: 2rem;
+    font-weight: 900;
+    font-style: italic;
+    color: #ffcc00;
+    text-shadow: 2px 2px 0px #c61300, 4px 4px 0px #000;
+}
+
+.deck-3d-stack:hover .card-back-uno {
+    transform: translate(-12px, -20px);
+    box-shadow: 0 0 30px rgba(0, 210, 255, 0.6);
+}
+
+/* CARTA DE DESCARTE ACTIVA EN MESA */
+.active-table-card {
+    box-shadow: 0 0 35px var(--cyan-glow), 0 15px 40px rgba(0,0,0,0.8);
+}
+
+/* BOTONERA LATERAL (UNO Y CORTE) */
+.rules-sidebar {
+    position: absolute;
+    right: 60px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.rule-btn {
+    padding: 16px 28px;
+    font-weight: 900;
+    border-radius: 14px;
+    border: none;
+    cursor: pointer;
+    font-size: 1.05rem;
+    letter-spacing: 1.5px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+    transition: all 0.2s ease;
+}
+.uno-btn-alert { background: linear-gradient(135deg, #ff8800, #ff4400); color: white; }
+.corte-btn-alert { background: linear-gradient(135deg, #dd0000, #990000); color: white; border: 1px solid rgba(255,0,0,0.3); }
+.rule-btn:hover { transform: scale(1.1) translateY(-2px); }
+
+/* HUD DE LA MANO DEL JUGADOR (EFECTO ABANICO 3D) */
+.player-hud-zone {
+    width: 85%;
+    margin: 0 auto;
+    background: linear-gradient(to top, rgba(10,16,24,0.98) 0%, rgba(10,16,24,0.4) 100%);
+    border-top: 1px solid rgba(255,255,255,0.15);
+    border-radius: 30px 30px 0 0;
+    padding: 20px 40px;
+}
+
+.hud-header { text-align: center; margin-bottom: 12px; }
+.hud-title { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 3px; color: #9ca3af; font-weight: 700; }
+
+.hand-3d-perspective {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+    perspective: 1200px;
+}
+
+.hand-3d-perspective .player-card {
+    margin-left: -48px;
+    cursor: pointer;
+    transform: rotateX(12deg);
+    transform-origin: bottom center;
+    box-shadow: -8px 8px 18px rgba(0,0,0,0.6);
+}
+.hand-3d-perspective .player-card:first-child { margin-left: 0; }
+
+.hand-3d-perspective .player-card:hover {
+    transform: translateY(-45px) rotateX(0deg) scale(1.3);
+    z-index: 150;
+    box-shadow: 0 25px 45px rgba(0, 0, 0, 0.9), 0 0 30px var(--cyan-glow);
+}
+
+.empty-hand-msg { color: rgba(255,255,255,0.25); font-style: italic; font-size: 0.95rem; }
+
+
+/* ==========================================================================
+   VENTANAS MODALES, ALERTAS Y CAPAS SUPERPUESTAS (OVERLAYS)
+   ========================================================================== */
+
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; 
+    width: 100vw; height: 100vh;
+    background: rgba(4, 7, 12, 0.88);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.glass-modal {
+    background: linear-gradient(135deg, rgba(20, 32, 48, 0.95) 0%, rgba(12, 20, 30, 0.95) 100%);
+    border: 1px solid rgba(255,255,255,0.14);
+    padding: 40px;
+    border-radius: 24px;
+    text-align: center;
+    min-width: 380px;
+    max-width: 480px;
+    box-shadow: 0 30px 70px rgba(0,0,0,0.85);
+}
+
+/* Animación de entrada fluida para las modales */
+@keyframes modalIn {
+    from { transform: scale(0.9) translateY(20px); opacity: 0; }
+    to { transform: scale(1) translateY(0); opacity: 1; }
+}
+.modal-animate-in { 
+    animation: modalIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; 
+}
+
+/* ELEMENTOS DEL LOGIN / LOBBY */
+.brand-badge {
+    background: rgba(0, 210, 255, 0.1);
+    color: var(--cyan-glow);
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 4px 12px;
+    border-radius: 20px;
+    display: inline-block;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+    border: 1px solid rgba(0, 210, 255, 0.2);
+}
+.brand-title { font-size: 2.2rem; font-weight: 900; letter-spacing: 1px; color: #fff; }
+.brand-title .accent-text { color: #ffcc00; }
+.brand-subtitle { font-size: 0.8rem; color: #6b7280; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 30px; }
+
+.input-wrapper { position: relative; margin-bottom: 25px; width: 100%; }
+#username-input {
+    width: 100%; padding: 14px 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(0,0,0,0.4); color: white; font-size: 1.1rem; text-align: center;
+    outline: none; transition: all 0.3s ease;
+}
+#username-input:focus { border-color: var(--cyan-glow); background: rgba(0,0,0,0.6); }
+
+/* BOTÓN DE ACCIÓN PRINCIPAL */
+.action-btn-primary {
+    background: linear-gradient(135deg, #00d2ff 0%, #00a2ff 100%); color: #04070c;
+    font-weight: 800; padding: 14px 32px; border: none; border-radius: 12px;
+    cursor: pointer; font-size: 1rem; text-transform: uppercase; width: 100%;
+    letter-spacing: 1px; box-shadow: 0 8px 20px rgba(0, 210, 255, 0.3);
+    transition: all 0.2s ease;
+}
+.action-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 25px rgba(0, 210, 255, 0.5); }
+.action-btn-primary:disabled { background: #374151; color: #9ca3af; box-shadow: none; cursor: not-allowed; }
+
+/* SALA DE ESPERA INTERNA DEL LOBBY */
+.waiting-box { margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 20px; text-align: left; }
+.waiting-box h4 { font-size: 0.85rem; color: #9ca3af; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; }
+.player-item-lobby {
+    display: flex; align-items: center; gap: 10px; color: #fff;
+    background: rgba(255,255,255,0.03); padding: 10px 16px; border-radius: 10px;
+    margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.05); font-weight: 600;
+}
+.pulse-green { width: 8px; height: 8px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px #10b981; }
+
+/* REJILLA DE OPCIONES PARA EL CAMBIO DE COLOR (COMODINES) */
+.color-options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px; }
+.color-opt {
+    padding: 24px; border: none; border-radius: 14px; font-weight: 800;
+    color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.5); cursor: pointer; font-size: 1.1rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.color-opt:hover { transform: translateY(-4px); }
+.color-opt.red { background: linear-gradient(135deg, #ff3b30, #c61300); box-shadow: 0 6px 15px rgba(255,59,48,0.3); }
+.color-opt.yellow { background: linear-gradient(135deg, #ffcc00, #b89600); color: #000; text-shadow: none; box-shadow: 0 6px 15px rgba(255,204,0,0.3); }
+.color-opt.green { background: linear-gradient(135deg, #34c759, #1c8c34); box-shadow: 0 6px 15px rgba(52,199,89,0.3); }
+.color-opt.blue { background: linear-gradient(135deg, #007aff, #0044aa); box-shadow: 0 6px 15px rgba(0,122,255,0.3); }
+
+/* SECCIÓN INTERNA DEL MODAL DE MENSAJES Y PENALIZACIONES */
+.alert-glow-border { border: 1px solid rgba(255, 51, 51, 0.3); box-shadow: 0 0 40px rgba(255, 51, 51, 0.15), 0 30px 70px rgba(0,0,0,0.85); }
+.alert-header { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 18px; }
+.alert-icon { font-size: 1.8rem; }
+.alert-body { background: rgba(0,0,0,0.2); padding: 20px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.04); margin-bottom: 25px; }
+#server-popup-msg { font-size: 1.05rem; line-height: 1.5; color: #e5e7eb; }
+
+/* ANIMACIONES GLOBALES */
+@keyframes glowPulse {
+    0%, 100% { text-shadow: 0 0 6px rgba(255, 215, 0, 0.2); opacity: 1; }
+    50% { text-shadow: 0 0 18px var(--gold-accent); opacity: 0.95; }
+}
+.animate-glow { animation: glowPulse 2s infinite ease-in-out; }

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UNO Master - UCAB Edition</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="lobby-screen" class="modal-overlay">
+        <div class="glass-modal modal-animate-in">
+            <div class="brand-badge">UCAB WI-FI CONNECTED</div>
+            <h2 class="brand-title">UNO <span class="accent-text">MASTER</span></h2>
+            <h5 class="brand-subtitle">Programación Orientada a la Web</h5>
+            
+            <div class="input-wrapper">
+                <input type="text" id="username-input" placeholder="Introduce tu Nickname" autofocus />
+                <span class="input-focus-line"></span>
+            </div>
+            <button id="join-btn" class="action-btn-primary">Unirse al Lobby</button>
+            
+            <div id="waiting-players" class="waiting-box" style="display: none;">
+                <h4>Sala de Espera Activa</h4>
+                <ul id="players-list"></ul>
+            </div>
+        </div>
+    </div>
+
+    <div id="color-picker-modal" class="modal-overlay" style="display: none;">
+        <div class="glass-modal modal-animate-in">
+            <div class="modal-icon">🎨</div>
+            <h3>Elige el nuevo Color</h3>
+            <p style="color: #9ca3af; font-size: 0.9rem; margin-bottom: 20px;">Has lanzado un Comodín. Cambia el rumbo de la mesa:</p>
+            <div class="color-options-grid">
+                <button class="color-opt red" onclick="selectComodinColor('Red')">Rojo</button>
+                <button class="color-opt yellow" onclick="selectComodinColor('Yellow')">Amarillo</button>
+                <button class="color-opt green" onclick="selectComodinColor('Green')">Verde</button>
+                <button class="color-opt blue" onclick="selectComodinColor('Blue')">Azul</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="server-popup-modal" class="modal-overlay" style="display: none;">
+        <div class="glass-modal modal-animate-in alert-glow-border">
+            <div class="alert-header">
+                <span class="alert-icon" id="modal-alert-icon">🚨</span>
+                <h3 id="modal-alert-title">Notificación de Mesa</h3>
+            </div>
+            <div class="alert-body">
+                <p id="server-popup-msg"></p>
+            </div>
+            <button id="resolve-popup-btn" class="action-btn-primary">Confirmar y Continuar</button>
+        </div>
+    </div>
+
+    <div class="game-table">
+        
+        <header class="game-status-panel">
+            <div class="status-header-main">
+                <div class="status-row">
+                    <span class="label">Turno Activo</span>
+                    <span class="value current-turn-player animate-glow" id="current-player">Sincronizando...</span>
+                </div>
+                <div class="status-row">
+                    <span class="label">Sentido</span>
+                    <span class="value" id="game-direction">➡️ Derecha</span>
+                </div>
+            </div>
+            <div class="status-row move-row">
+                <span class="label">Log de Eventos</span>
+                <span class="value log-highlight" id="move-description">Estableciendo puente WebSockets...</span>
+            </div>
+        </header>
+
+        <main class="center-arena">
+            
+            <div class="deck-wrapper">
+                <div class="deck-3d-stack" id="draw-deck" title="Haga clic para robar una carta">
+                    <div class="deck-layer layer-3"></div>
+                    <div class="deck-layer layer-2"></div>
+                    <div class="card card-back-uno">
+                        <div class="inner-oval">
+                            <span class="uno-text-3d">UNO</span>
+                        </div>
+                    </div>
+                </div>
+                <span class="arena-label">MAZO ROBAR</span>
+            </div>
+
+            <div class="discard-wrapper">
+                <div class="discard-pile-container">
+                    <img src="assets/Blue_Seven.png" alt="Mesa" class="card active-table-card" id="discard-pile">
+                </div>
+                <span class="arena-label">MESA DESCARTE</span>
+            </div>
+
+            <div id="rules-actions-container" class="rules-sidebar" style="display: none;">
+                <button id="btn-cantar-uno" class="rule-btn uno-btn-alert">¡UNO!</button>
+                <button id="btn-cantar-corte" class="rule-btn corte-btn-alert">¡CORTE!</button>
+            </div>
+
+        </main>
+
+        <footer class="player-hud-zone">
+            <div class="hud-header">
+                <span class="hud-title">Tu Mano Privada</span>
+            </div>
+            <div class="hand-3d-perspective" id="player-hand">
+                <p class="empty-hand-msg">Esperando asignación de cartas...</p>
+            </div>
+        </footer>
+
+    </div>
+
+    <script>
+        // Seteo dinámico del host para evitar caídas en local o producción
+        const isHttps = window.location.protocol === 'https:';
+        const wsUrl = `ws://localhost:3000`;
+        const socket = new WebSocket(wsUrl);
+
+        // Elementos del DOM
+        const lobbyScreen = document.getElementById('lobby-screen');
+        const usernameInput = document.getElementById('username-input');
+        const joinBtn = document.getElementById('join-btn');
+        const waitingPlayers = document.getElementById('waiting-players');
+        const playersList = document.getElementById('players-list');
+        
+        const currentPlayerEl = document.getElementById('current-player');
+        const gameDirectionEl = document.getElementById('game-direction');
+        const moveDescriptionEl = document.getElementById('move-description');
+        const playerHandContainer = document.getElementById('player-hand');
+        const discardPileImg = document.getElementById('discard-pile');
+        const drawDeckBtn = document.getElementById('draw-deck');
+        
+        const rulesContainer = document.getElementById('rules-actions-container');
+        const btnCantarUno = document.getElementById('btn-cantar-uno');
+        const btnCantarCorte = document.getElementById('btn-cantar-corte');
+        
+        const colorPickerModal = document.getElementById('color-picker-modal');
+        const serverPopupModal = document.getElementById('server-popup-modal');
+        const serverPopupMsg = document.getElementById('server-popup-msg');
+        const resolvePopupBtn = document.getElementById('resolve-popup-btn');
+        const modalAlertIcon = document.getElementById('modal-alert-icon');
+        const modalAlertTitle = document.getElementById('modal-alert-title');
+
+        let pendingCardIndex = null;
+        let isPopupActiveForServer = false;
+
+        // Lanzador estético de modales (Reemplazo total de alerts viejos)
+        function showCustomAlert(title, message, icon = "📢") {
+            modalAlertIcon.textContent = icon;
+            modalAlertTitle.textContent = title;
+            serverPopupMsg.textContent = message;
+            serverPopupModal.style.display = 'flex';
+            isPopupActiveForServer = false; 
+        }
+
+        // FUNCIÓN CORREGIDA CON LA IMAGEN DE TU CARPETA
+        function getCardFileName(card) {
+            if (!card) return 'Blue_Seven.png';
+            
+            // MAPEO CORRECTO PARA LOS COMODINES DE TU IMAGEN
+            if (card.color === 'Comodín') {
+                if (card.value === '+4') {
+                    return 'Wild_DrawFour.png';
+                } else {
+                    return 'Wild_ChangeColor.png';
+                }
+            }
+            
+            let colorEng = 'Blue';
+            if (card.color === 'Rojo') colorEng = 'Red';
+            if (card.color === 'Amarillo') colorEng = 'Yellow';
+            if (card.color === 'Verde') colorEng = 'Green';
+            if (card.color === 'Azul') colorEng = 'Blue';
+
+            let valueEng = card.value;
+            const mapValores = {
+                '0': 'Zero', '1': 'One', '2': 'Two', '3': 'Three', '4': 'Four',
+                '5': 'Five', '6': 'Six', '7': 'Seven', '8': 'Eight', '9': 'Nine',
+                'Bloqueo': 'SkipTurn', 'CambioSentido': 'Reverse', '+2': 'DrawTwo'
+            };
+            
+            if (mapValores[card.value]) {
+                valueEng = mapValores[card.value];
+            }
+
+            return `${colorEng}_${valueEng}.png`;
+        }
+
+        joinBtn.onclick = () => {
+            const name = usernameInput.value.trim();
+            if(!name) {
+                showCustomAlert("Nombre Vacío", "Por favor ingresa un nickname válido para ingresar.", "⚠️");
+                return;
+            }
+            
+            socket.send(JSON.stringify({
+                type: 'joinGame',
+                data: name
+            }));
+            
+            joinBtn.disabled = true;
+            usernameInput.disabled = true;
+            joinBtn.textContent = "Buscando mesa...";
+        };
+
+        socket.onmessage = (event) => {
+            try {
+                const packet = JSON.parse(event.data);
+                const { type, data } = packet;
+
+                if (type === 'waitingRoom') {
+                    lobbyScreen.style.display = 'flex';
+                    waitingPlayers.style.display = 'block';
+                    playersList.innerHTML = '';
+                    data.forEach(name => {
+                        const li = document.createElement('li');
+                        li.className = "player-item-lobby";
+                        li.innerHTML = `<span class="pulse-green"></span> ${name}`;
+                        playersList.appendChild(li);
+                    });
+                }
+
+                if (type === 'gameState') {
+                    lobbyScreen.style.display = 'none';
+                    
+                    moveDescriptionEl.innerHTML = data.log || "Mesa de juego actualizada.";
+                    gameDirectionEl.textContent = data.direction === 1 ? "➡️ Derecha" : "⬅️ Izquierda";
+                    
+                    if (data.isMyTurn) {
+                        currentPlayerEl.textContent = "¡ES TU TURNO!";
+                        currentPlayerEl.className = "value current-turn-player turn-active-glow";
+                    } else {
+                        currentPlayerEl.textContent = `Turno de: ${data.currentTurnName || 'Otro Jugador'}`;
+                        currentPlayerEl.className = "value current-turn-player turn-inactive";
+                    }
+
+                    if (data.topCard) {
+                        discardPileImg.src = `assets/${getCardFileName(data.topCard)}`;
+                        discardPileImg.alt = `Mesa: ${data.topCard.color} ${data.topCard.value}`;
+                    }
+
+                    rulesContainer.style.display = data.mostrarBotoneraUno ? 'flex' : 'none';
+
+                    if (data.hand) {
+                        playerHandContainer.innerHTML = '';
+                        data.hand.forEach((card, index) => {
+                            const img = document.createElement('img');
+                            img.src = `assets/${getCardFileName(card)}`;
+                            img.alt = `${card.color} ${card.value}`;
+                            img.className = 'card player-card';
+                            
+                            img.onclick = () => {
+                                if (card.color === 'Comodín') {
+                                    pendingCardIndex = index;
+                                    colorPickerModal.style.display = 'flex';
+                                } else {
+                                    socket.send(JSON.stringify({
+                                        type: 'playCard',
+                                        data: { index: index, chosenColor: null }
+                                    }));
+                                }
+                            };
+                            playerHandContainer.appendChild(img);
+                        });
+                    }
+                }
+
+                if (type === 'showPopup') {
+                    isPopupActiveForServer = true; 
+                    showCustomAlert("Alerta de Penalización", data, "🚨");
+                }
+
+                if (type === 'errorMsg') {
+                    showCustomAlert("Movimiento Denegado", data, "❌");
+                }
+
+                if (type === 'gameOver') {
+                    showCustomAlert("Juego Terminado", `Ganador definitivo de la sala: ${data}`, "🏆");
+                    setTimeout(() => window.location.reload(), 5000);
+                }
+
+            } catch (err) {
+                console.error("Error interpretando paquete:", err);
+            }
+        };
+
+        function selectComodinColor(color) {
+            colorPickerModal.style.display = 'none';
+            if (pendingCardIndex !== null) {
+                socket.send(JSON.stringify({
+                    type: 'playCard',
+                    data: { index: pendingCardIndex, chosenColor: color }
+                }));
+                pendingCardIndex = null;
+            }
+        }
+
+        resolvePopupBtn.onclick = () => {
+            serverPopupModal.style.display = 'none';
+            if (isPopupActiveForServer) {
+                socket.send(JSON.stringify({ type: 'resolvePopup' }));
+            }
+        };
+
+        drawDeckBtn.onclick = () => socket.send(JSON.stringify({ type: 'drawCard' }));
+        btnCantarUno.onclick = () => socket.send(JSON.stringify({ type: 'cantarUno' }));
+        btnCantarCorte.onclick = () => socket.send(JSON.stringify({ type: 'cantarCorte' }));
+
+        socket.onopen = () => { moveDescriptionEl.textContent = "Conexión en vivo con Localhost establecida."; };
+        socket.onerror = () => { moveDescriptionEl.textContent = "Error de conexión. Verifica server.js"; };
+    </script>
+</body>
+</html>
